@@ -1,5 +1,5 @@
 ---
-- hosts: miners
+- hosts: all
   vars:
     http_port: 80
   remote_user: wes
