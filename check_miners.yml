@@ -1,8 +1,0 @@
----
-- hosts: all
-  vars:
-    http_port: 80
-  remote_user: wes
-  tasks:
-    - name: Start and enable claymore service
-      service: name=claymore state=started enabled=yes

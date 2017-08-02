@@ -1,0 +1,21 @@
+
+miner_applications:
+  claymore:
+    download_link: https://github.com/nanopool/Claymore-Dual-Miner/releases/download/v9.7/Claymore.s.Dual.Ethereum.Decred_Siacoin_Lbry_Pascal.AMD.NVIDIA.GPU.Miner.v9.7.-.LINUX.tar.gz
+    target_directory: /opt/claymore
+
+  ethminer:
+    download_link: https://github.com/ethereum-mining/ethminer/releases/download/v0.12.0.dev1/ethminer-0.12.0.dev1-Linux.tar.gz
+    target_directory: /opt/ethminer
+
+accounts:
+  ethereum: 0x331077Cd09209dc9e51c2E44a711f928dE3F669e
+  ubiq: 0x1234
+
+# Miner services to configure
+# Note: Each of these should correspond to a template in the templates directory
+miner_services:
+  - claymore_nanopool
+  - claymore_ubiq
+  - ethminer_nanopool
+  - ethminer_ubiq

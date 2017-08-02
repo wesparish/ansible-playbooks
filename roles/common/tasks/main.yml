@@ -1,0 +1,26 @@
+---
+# This playbook runs the common plays
+
+- name: Create miner target directories
+  become: yes
+  file:
+    path="{{ item.value.target_directory }}"
+    state=directory
+    owner=wes
+    group=wes
+    mode=0777
+  with_dict: "{{ miner_applications }}"
+
+- name: Download and extract miner applications
+  unarchive:
+    src: "{{ item.value.download_link }}"
+    dest: "{{ item.value.target_directory }}"
+    remote_src: True
+  with_dict: "{{ miner_applications }}"
+
+- name: Create services
+  become: yes
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}.service"
+  with_items: "{{ miner_services }}"

@@ -1,0 +1,55 @@
+---
+- hosts: all
+  vars:
+    claymore_miner_link: https://github.com/nanopool/Claymore-Dual-Miner/releases/download/v9.7/Claymore.s.Dual.Ethereum.Decred_Siacoin_Lbry_Pascal.AMD.NVIDIA.GPU.Miner.v9.7.-.LINUX.tar.gz
+    claymore_target_directory: /opt/claymore
+    account_id: "0x331077Cd09209dc9e51c2E44a711f928dE3F669e"
+    service_template: templates/claymore-nanopool.j2
+  remote_user: wes
+  tasks:
+#    - name: Delete old Claymore target directory
+#      become: yes
+#      file:
+#        state: absent
+#        path: "{{ claymore_target_directory }}"
+    - name: Create Claymore target directory
+      become: yes
+      file: 
+        path="{{ claymore_target_directory }}"
+        state=directory
+        owner=wes
+        group=wes
+        mode=0777
+    - name: Download and extract claymore miner
+      unarchive:
+        src: "{{ claymore_miner_link }}"
+        dest: "{{ claymore_target_directory }}"
+        remote_src: True
+    - name: Create systemd unit file for claymore-nanopool with account_id {{ account_id }}
+      become: yes
+      template:
+        src: "{{ service_template }}"
+        dest: /etc/systemd/system/claymore-nanopool.service
+    - name: Stop old claymore.service
+      become: yes
+      ignore_errors: yes
+      systemd:
+        daemon_reload: yes
+        state: stopped
+        enabled: no
+        name: claymore.service
+    - name: Stop old ethminer.service
+      become: yes
+      ignore_errors: yes
+      systemd:
+        daemon_reload: yes
+        state: stopped
+        enabled: no
+        name: ethminer.service
+    - name: Start claymore-nanopool.service
+      become: yes
+      systemd:
+        name: claymore-nanopool.service
+        enabled: yes
+        state: started
+        daemon_reload: yes

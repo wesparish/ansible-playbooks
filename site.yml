@@ -1,0 +1,22 @@
+---
+# This playbook will configure all miners
+
+- hosts: all
+  roles:
+    - role: common
+
+- hosts: cleanup
+  roles:
+    - role: cleanup
+
+#- hosts: claymore-nanopool
+#  roles: 
+#    - role: claymore-nanopool
+#
+#- hosts: claymore-ubiq
+#  roles:
+#    - role: claymore-ubiq
+#
+#- hosts: ethminer-ubiq
+#  roles:
+#    - role: ethminer-ubiq

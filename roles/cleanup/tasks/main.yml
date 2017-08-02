@@ -1,0 +1,25 @@
+---
+# This playbook cleans up all miners and removes all services
+
+- name: Stop services
+  systemd:
+    daemon_reload: yes
+    state: stopped
+    enabled: no
+    name: "{{ item }}"
+  with_items: "{{ miner_services }}"
+
+- name: Remove services
+  become: yes
+  file:
+    path: "/etc/systemd/system/{{ item }}.service"
+    state: absent
+  with_items: "{{ miner_services }}"
+
+- name: Remove miners
+  become: yes
+  file:
+    path: "{{ item.value.target_directory }}"
+    state: absent
+  with_dict: "{{ miner_applications }}"
+
