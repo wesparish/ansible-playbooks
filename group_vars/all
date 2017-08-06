@@ -9,8 +9,8 @@ miner_applications:
     target_directory: /opt/ethminer
 
 accounts:
-  ethereum: 0x331077Cd09209dc9e51c2E44a711f928dE3F669e
-  ubiq: 0x1234
+  ethereum: "0x331077Cd09209dc9e51c2E44a711f928dE3F669e"
+  ubiq: "0xfdfbd11cd88ff16306b385179ce26efdc942d23c"
 
 # Miner services to configure
 # Note: Each of these should correspond to a template in the templates directory

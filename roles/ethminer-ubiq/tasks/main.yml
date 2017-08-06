@@ -1,0 +1,20 @@
+---
+# This playbook still stop all services, then start just ethminer_ubiq
+
+- name: Stop all services
+  become: yes
+  systemd:
+    daemon_reload: yes
+    state: stopped
+    enabled: no
+    name: "{{ item }}"
+  with_items: "{{ miner_services }}"
+
+- name: Start ethminer_ubiq service
+  become: yes
+  systemd:
+    daemon_reload: yes
+    state: started
+    enabled: yes
+    name: "ethminer_ubiq"
+

@@ -1,0 +1,11 @@
+[cleanup]
+
+[claymore-nanopool]
+ansible-target ansible_user=wes
+
+[claymore-ubiq]
+
+[ethminer-nanopool]
+
+[ethminer-ubiq]
+

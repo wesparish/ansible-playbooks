@@ -2,6 +2,7 @@
 # This playbook cleans up all miners and removes all services
 
 - name: Stop services
+  become: yes
   systemd:
     daemon_reload: yes
     state: stopped

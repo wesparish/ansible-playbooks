@@ -2,7 +2,7 @@
 Description=claymore-nanopool
 
 [Service]
-ExecStart=/bin/bash -c "{{ miner_applications.claymore.target_directory }}/ethdcrminer64 -epool eth-us-east1.nanopool.org:9999 -ewal {{ accounts.ethereum }}/{{ ansible_hostname }}/YOUR_EMAIL -epsw x -mode 1 -ftime 10 -tt 70 -fanmin 50"
+ExecStart=/bin/bash -c "{{ miner_applications.claymore.target_directory }}/ethdcrminer64 -epool eth-us-east1.nanopool.org:9999 -ewal {{ accounts.ethereum }} -eworker {{ ansible_hostname }} -epsw x -mode 1 -ftime 10 -tt 70 -fanmin 50  -tstop 90"
 
 [Install]
 WantedBy=multi-user.target

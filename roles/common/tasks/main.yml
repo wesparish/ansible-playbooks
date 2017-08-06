@@ -24,3 +24,9 @@
     src: "{{ item }}.j2"
     dest: "/etc/systemd/system/{{ item }}.service"
   with_items: "{{ miner_services }}"
+
+- name: Create epools file for claymore
+  become: yes
+  template:
+    src: "epools.j2"
+    dest: "{{ miner_applications.claymore.target_directory }}"
