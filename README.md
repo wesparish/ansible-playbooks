@@ -1,5 +1,4 @@
-Use the following command to run the check_miners.yml playbook
+Use the following command to run the playbook
 
-ansible-playbook ./check_miners.yml -i w-inventory.yml
+ansible-playbook -i test-inventory.yml -K -k site.yml
 
-ansible-playbook -i w-inventory.yml -K claymore_nanopool.yml
