@@ -3,6 +3,7 @@
 
 - name: Stop all services
   become: yes
+  ignore_errors: yes
   systemd:
     daemon_reload: yes
     state: stopped

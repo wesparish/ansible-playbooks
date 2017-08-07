@@ -30,3 +30,9 @@
   template:
     src: "epools.j2"
     dest: "{{ miner_applications.claymore.target_directory }}"
+
+- name: Install libcurl
+  become: yes
+  apt:
+    name: libcurl3
+    state: present

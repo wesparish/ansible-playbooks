@@ -19,3 +19,6 @@ miner_services:
   - claymore_ubiq
   - ethminer_nanopool
   - ethminer_ubiq
+  - claymore
+  - ethminer
+  - claymore-nanopool
