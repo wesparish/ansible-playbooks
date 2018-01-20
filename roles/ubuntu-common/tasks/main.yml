@@ -1,0 +1,33 @@
+---
+# This playbook cleans up all miners and removes all services
+
+- name: sudo
+  become: yes
+  template:
+    src: "90-wes.sudo"
+    dest: "/etc/sudoers.d/90-wes"
+
+- name: Add authorized key
+  authorized_key:
+    user: wes
+    state: present
+    key: '{{ item }}'
+  with_file: 
+    - public-keys/wes
+
+- name: Setup apt repositories
+  become: yes
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+  with_items:
+    - "deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted"
+    - "deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted"
+    - "deb http://us.archive.ubuntu.com/ubuntu/ xenial universe"
+    - "deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates universe"
+    - "deb http://us.archive.ubuntu.com/ubuntu/ xenial multiverse"
+    - "deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates multiverse"
+    - "deb http://us.archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse"
+    - "deb http://security.ubuntu.com/ubuntu xenial-security main restricted"
+    - "deb http://security.ubuntu.com/ubuntu xenial-security universe"
+    - "deb http://security.ubuntu.com/ubuntu xenial-security multiverse"

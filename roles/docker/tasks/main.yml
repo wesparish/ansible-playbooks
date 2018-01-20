@@ -1,0 +1,33 @@
+---
+# This playbook cleans up all miners and removes all services
+
+#- name: Install docker
+#  become: yes
+#  shell: "curl https://releases.rancher.com/install-docker/17.06.sh | sh"
+#  args:
+#    creates: /usr/bin/docker
+#    executable: /bin/bash
+
+- name: Download Docker install script
+  become: yes
+  get_url:
+    url: https://releases.rancher.com/install-docker/17.06.sh
+    dest: /tmp/docker-install-script.sh
+    mode: 0777
+
+- name: Install Docker
+  become: yes
+  command: /tmp/docker-install-script.sh
+  args:
+    creates: /usr/bin/docker
+
+- name: Install Pip
+  become: yes
+  apt:
+    name: python-pip
+    update_cache: yes
+
+- name: Pip install docker
+  become: yes
+  pip:
+    name: docker

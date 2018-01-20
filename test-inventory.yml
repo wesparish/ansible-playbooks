@@ -1,7 +1,13 @@
 [cleanup]
 
-[claymore-nanopool]
+[ubuntu-common]
+
+[docker]
+
+[rancher]
 ansible-target ansible_user=wes
+
+[claymore-nanopool]
 
 [claymore-ubiq]
 

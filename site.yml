@@ -4,6 +4,21 @@
 # Verifies that python is installed
 - include: roles/python/tasks/main.yml
 
+# Common Ubuntu stuff
+- hosts: ubuntu docker rancher
+  roles:
+    - role: ubuntu-common
+
+# Docker
+- hosts: docker rancher
+  roles:
+    - role: docker
+
+# Join Rancher
+- hosts: rancher
+  roles:
+    - role: rancher
+
 # Download bianries and create all services
 - hosts: claymore-nanopool claymore-ubiq ethminer-nanopool ethminer-ubiq
   roles:

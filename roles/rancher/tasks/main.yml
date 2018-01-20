@@ -1,0 +1,14 @@
+---
+# This playbook cleans up all miners and removes all services
+
+- name: Install docker
+  become: yes
+  docker_container:
+    name: rancher-agent-launcher
+    image: rancher/agent:v1.2.5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/rancher:/var/lib/rancher
+    auto_remove: true
+    privileged: true
+    command: "{{ rancher[location] }}"
