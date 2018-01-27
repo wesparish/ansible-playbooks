@@ -15,11 +15,35 @@
   with_file: 
     - public-keys/wes
 
+- name: Add apt key
+  become: yes
+  apt_key:
+    data: "{{ lookup('file', 'public-keys/D3F1E2F6-public.key') }}"
+    state: present
+
 - name: Setup apt repositories
   become: yes
   apt_repository:
     repo: "{{ item }}"
     state: present
+  with_items:
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-xenial/ xenial main restricted"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-xenial/ xenial-updates main restricted"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-xenial/ xenial universe"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-xenial/ xenial-updates universe"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-xenial/ xenial multiverse"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-xenial/ xenial-updates multiverse"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-xenial/ xenial-backports main restricted universe multiverse"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-security-xenial/ xenial-security main restricted"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-security-xenial/ xenial-security universe"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-security-xenial/ xenial-security multiverse"
+     - "deb https://nexus.cowtownt.org/repository/ubuntu-xenial-custom/ xenial main restricted"
+
+- name: Delete internet apt repositories
+  become: yes
+  apt_repository:
+    repo: "{{ item }}"
+    state: absent
   with_items:
     - "deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted"
     - "deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted"

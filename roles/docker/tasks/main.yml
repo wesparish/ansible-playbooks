@@ -8,6 +8,19 @@
 #    creates: /usr/bin/docker
 #    executable: /bin/bash
 
+- name: Docker config directory
+  become: yes
+  file: 
+    path: /etc/docker
+    state: directory
+    owner: root
+
+- name: Deploy daemon.json
+  become: yes
+  template:
+    src: templates/daemon.json
+    dest: /etc/docker/daemon.json
+
 - name: Download Docker install script
   become: yes
   get_url:

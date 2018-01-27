@@ -1,7 +1,7 @@
 ---
 # This playbook cleans up all miners and removes all services
 
-- name: Install docker
+- name: Rancher agent launcher
   become: yes
   docker_container:
     name: rancher-agent-launcher
@@ -11,4 +11,12 @@
       - /var/lib/rancher:/var/lib/rancher
     auto_remove: true
     privileged: true
+    env:
+      CATTLE_HOST_LABELS: "{{ rancher_labels|default(omit) }}"
     command: "{{ rancher[location] }}"
+  register: rancheragent
+
+- name: Display Rancher agent info
+  debug:
+    var: rancheragent
+    verbosity: 4

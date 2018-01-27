@@ -4,6 +4,11 @@
 # Verifies that python is installed
 - include: roles/python/tasks/main.yml
 
+# Set FQDN
+- hosts: ubuntu docker rancher
+  roles:
+    - role: hostname
+
 # Common Ubuntu stuff
 - hosts: ubuntu docker rancher
   roles:
@@ -13,6 +18,11 @@
 - hosts: docker rancher
   roles:
     - role: docker
+
+# Configure AMD GPU
+- hosts: amdgpu
+  roles:
+    - role: amdgpu
 
 # Join Rancher
 - hosts: rancher
