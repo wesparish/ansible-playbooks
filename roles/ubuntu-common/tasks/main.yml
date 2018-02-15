@@ -55,3 +55,17 @@
     - "deb http://security.ubuntu.com/ubuntu xenial-security main restricted"
     - "deb http://security.ubuntu.com/ubuntu xenial-security universe"
     - "deb http://security.ubuntu.com/ubuntu xenial-security multiverse"
+
+- name: Set kernel.panic in sysctl.conf
+  become: yes
+  lineinfile:
+    path: /etc/sysctl.conf
+    regexp: '^kernel.panic ='
+    line: 'kernel.panic = 10'
+  register: sysctl
+
+- name: Reload sysctl settings
+  become: yes
+  command: sysctl -p
+  when: sysctl.changed
+  
