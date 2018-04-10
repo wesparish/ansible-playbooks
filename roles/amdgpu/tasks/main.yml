@@ -50,17 +50,26 @@
   lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX='
-#    line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 amdgpu.vm_fragment_size=9"'
     line: 'GRUB_CMDLINE_LINUX="amdgpu.vm_fragment_size=9"'
-  register: gruboptions
+  register: gruboptions1
+  when: location == "weshouse"
+
+- name: Add kernel option for new linux kernel
+  become: yes
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX='
+    line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 amdgpu.vm_fragment_size=9"'
+  register: gruboptions2
+  when: location == "jamiehouse"
 
 - name: Update grub to pick up changes
   become: yes
   command: update-grub
-  when: gruboptions.changed
+  when: gruboptions1.changed or gruboptions2.changed
 
 - name: Update initramfs
   become: yes
   command: update-initramfs -u
-  when: gruboptions.changed
+  when: gruboptions1.changed or gruboptions2.changed
 

@@ -1,4 +1,8 @@
 {
-  "storage-driver": "overlay2"
+  "storage-driver": "overlay2",
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "1m"
+  }
 }
 

@@ -20,6 +20,7 @@
   template:
     src: templates/daemon.json
     dest: /etc/docker/daemon.json
+  register: daemonjson
 
 - name: Download Docker install script
   become: yes
@@ -44,3 +45,11 @@
   become: yes
   pip:
     name: docker
+
+- name: Restart docker
+  become: yes
+  service:
+    name: docker
+    state: restarted
+    enabled: yes
+  when: daemonjson.changed
