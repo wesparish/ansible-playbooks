@@ -15,7 +15,7 @@
     - role: ubuntu-common
 
 # Docker
-- hosts: docker rancher
+- hosts: docker rancher nvidiagpu
   roles:
     - role: docker
 
@@ -23,6 +23,10 @@
 - hosts: amdgpu
   roles:
     - role: amdgpu
+
+- hosts: nvidiagpu
+  roles:
+    - role: nvidiagpu
 
 # Join Rancher
 - hosts: rancher
@@ -57,3 +61,10 @@
   roles:
     - role: cleanup
 
+- hosts: cleanup_rancher_1.6
+  roles:
+    - role: cleanup_rancher_1.6
+
+- hosts: rancher2
+  roles:
+    - role: rancher2

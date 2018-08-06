@@ -1,0 +1,2 @@
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+deb https://nvidia.github.io/kubernetes/{{ ansible_distribution|lower }}{{ ansible_distribution_version }}/$(ARCH) /

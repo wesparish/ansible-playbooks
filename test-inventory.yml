@@ -5,7 +5,23 @@
 [docker]
 
 [rancher]
-ansible-target ansible_user=wes
+#ansible-target.weshouse ansible_user=wes location=weshouse
+
+#w-ch[1:6].weshouse location=weshouse
+#nv16.weshouse location=weshouse
+
+#ch12.jamiehouse location=jamiehouse
+#ch13.jamiehouse location=jamiehouse ansible_host=10.2.0.57
+#ch17.jamiehouse location=jamiehouse 
+
+#chminer[1:9].jamiehouse location=jamiehouse
+
+#hktestminer.weshouse location=weshouse ansible_host=172.16.1.187 rancher_labels='location=weshouse&gpu-type=amd&gpumonitor=true&miner=claymore'
+w-ch6.weshouse location=weshouse rancher_labels='location=weshouse&gpu-type=amd&gpumonitor=true&miner=claymore'
+
+[amdgpu]
+#hktestminer.weshouse location=weshouse ansible_host=172.16.1.187 
+w-ch6.weshouse location=weshouse rancher_labels='location=weshouse&gpu-type=amd&gpumonitor=true&miner=claymore'
 
 [claymore-nanopool]
 

@@ -1,0 +1,24 @@
+---
+# This playbook cleans up all miners and removes all services
+
+- name: Rancher 2.0 agent launcher
+  become: yes
+  docker_container:
+    name: rancher2-agent-launcher
+    image: nexus.cowtownt.org:5010/rancher/rancher-agent:v2.0.2
+    volumes:
+      - /etc/kubernetes:/etc/kubernetes
+      - /var/run:/var/run
+    auto_remove: false
+    network_mode: host
+    restart_policy: unless-stopped
+    privileged: true
+#    env:
+#      CATTLE_HOST_LABELS: "{{ rancher_labels|default(omit) }}"
+    command: "{{ rancher2[location] }}"
+  register: rancheragent
+
+- name: Display Rancher agent info
+  debug:
+    var: rancheragent
+    verbosity: 4

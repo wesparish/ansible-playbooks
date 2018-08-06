@@ -1,0 +1,19 @@
+---
+# This playbook cleans up all miners and removes all services
+
+- name: Remove all Docker containers
+  become: yes
+  shell: docker rm -f $(docker ps -aq)
+  ignore_errors: yes
+  
+
+- name: Remove all Docker volumes
+  become: yes
+  shell: docker volume rm $(docker volume ls -q)
+  ignore_errors: yes
+
+- name: Remove /var/lib/rancher
+  become: yes
+  shell: rm -rf /var/lib/rancher
+  ignore_errors: yes
+
