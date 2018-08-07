@@ -21,20 +21,58 @@
     src: templates/daemon.json
     dest: /etc/docker/daemon.json
   register: daemonjson
+  when: inventory_hostname not in groups['nvidiagpu']
 
-- name: Download Docker install script
+- name: Deploy nvidia daemon.json
   become: yes
-  get_url:
-    url: https://releases.rancher.com/install-docker/17.06.sh
-    dest: /tmp/docker-install-script.sh
-    mode: 0777
+  template:
+    src: templates/daemon-nvidia.json
+    dest: /etc/docker/daemon.json
+  register: daemonjson
+  when: inventory_hostname in groups['nvidiagpu']
+
+- name: Setup Docker repos
+  become: yes
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+
+- name: Add Docker apt key
+  become: yes
+  apt_key:
+    url: "https://download.docker.com/linux/ubuntu/gpg"
+    state: present
+
+- name: Add Docker repository
+  become: yes
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release|lower }} stable"
+    state: present
 
 - name: Install Docker
   become: yes
-  command: /tmp/docker-install-script.sh
-  args:
-    creates: /usr/bin/docker
+  apt:
+    name: docker-ce
+    update_cache: yes
 
+#- name: Download Docker install script
+#  become: yes
+#  get_url:
+#    url: https://releases.rancher.com/install-docker/17.06.sh
+#    dest: /tmp/docker-install-script.sh
+#    mode: 0777
+#
+#- name: Install Docker
+#  become: yes
+#  command: /tmp/docker-install-script.sh
+#  args:
+#    creates: /usr/bin/docker
+#
 - name: Install Pip
   become: yes
   apt:

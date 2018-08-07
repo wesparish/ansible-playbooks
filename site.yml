@@ -5,17 +5,17 @@
 - include: roles/python/tasks/main.yml
 
 # Set FQDN
-- hosts: ubuntu docker rancher
+- hosts: ubuntu docker rancher rancher2
   roles:
     - role: hostname
 
 # Common Ubuntu stuff
-- hosts: ubuntu docker rancher
+- hosts: ubuntu docker rancher rancher2
   roles:
     - role: ubuntu-common
 
 # Docker
-- hosts: docker rancher nvidiagpu
+- hosts: docker rancher nvidiagpu rancher2
   roles:
     - role: docker
 

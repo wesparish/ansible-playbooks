@@ -9,10 +9,6 @@
   apt_key:
     url: "https://nvidia.github.io/nvidia-docker/gpgkey"
     state: present
-  with_items:
-    - "https://nvidia.github.io/nvidia-docker/gpgkey"
-    - "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
-    - "https://nvidia.github.io/kubernetes/gpgkey"
 
 - name: Setup nvidia-docker2 apt repositories
   become: yes
@@ -21,19 +17,16 @@
     dest: "/etc/apt/sources.list.d/{{ item }}"
   with_items:
     - "nvidia-docker.list"
-    - "nvidia-kubernetes.list"
 
 - name: Install nvidia-docker2
   become: yes
   apt:
-    name: nvidia-docker2
+    name: "{{ item }}"
     update_cache: yes
   with_items:
     - "nvidia-docker2"
-    - "kubectl=1.9.7+nvidia"
-    - "kubelet=1.9.7+nvidia"
-    - "kubeadm=1.9.7+nvidia"
-    - "cuda-drivers"
+    - "nvidia-384"
+#    - "cuda-drivers"
 
 - name: Deploy daemon.json
   become: yes
