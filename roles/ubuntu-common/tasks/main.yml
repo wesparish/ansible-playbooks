@@ -74,4 +74,17 @@
   become: yes
   command: sysctl -p
   when: sysctl.changed
+
+- name: Install nfs-common
+  become: yes
+  apt:
+    name: nfs-common
   
+- name: Setup NFS home dir
+  become: yes
+  mount:
+    path: /home
+    src: 172.16.1.17:/mnt/raid5_kdrive/home/
+    fstype: nfs
+    state: mounted
+  when: location == "weshouse"
