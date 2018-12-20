@@ -26,6 +26,7 @@
   apt_repository:
     repo: "{{ item }}"
     state: present
+    update_cache: no
   with_items:
      - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} main restricted"
      - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates main restricted"
@@ -38,6 +39,11 @@
      - "deb https://nexus.cowtownt.org/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security universe"
      - "deb https://nexus.cowtownt.org/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security multiverse"
 #     - "deb https://nexus.cowtownt.org/repository/ubuntu-{{ ansible_distribution_release }}-custom/ {{ ansible_distribution_release }} main restricted"
+
+- name: Setup apt repositories
+  become: yes
+  apt:
+    update_cache: yes
 
 - name: Delete internet apt repositories
   become: yes

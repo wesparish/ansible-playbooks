@@ -44,6 +44,7 @@
     - linux-image-4.14.0-rc4-custom=4.14.0-rc4-custom-1
     - linux-headers-4.14.0-rc4-custom=4.14.0-rc4-custom-1
     - linux-libc-dev=4.14.0-rc4-custom-1
+  when: ansible_distribution_version < 18.04
 
 - name: Add kernel option for new linux kernel
   become: yes
