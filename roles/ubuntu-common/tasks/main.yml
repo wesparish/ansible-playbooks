@@ -88,3 +88,30 @@
     fstype: nfs
     state: mounted
   when: location == "weshouse"
+
+- name: Create /mnt/raid5_drive dir
+  become: yes
+  file:
+    path: /mnt/raid5_kdrive
+    state: directory
+
+- name: Setup NFS raid5_kdrive dir
+  become: yes
+  mount:
+    path: /mnt/raid5_kdrive
+    src: 172.16.1.17:/mnt/raid5_kdrive/
+    fstype: nfs
+    state: mounted
+  when: location == "weshouse"
+
+- name: Install ntp
+  become: yes
+  apt:
+    name: ntp
+
+- name: Start NTP
+  become: yes
+  systemd:
+    state: started
+    enabled: yes
+    name: ntp
