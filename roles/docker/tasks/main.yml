@@ -60,19 +60,6 @@
     name: docker-ce
     update_cache: yes
 
-#- name: Download Docker install script
-#  become: yes
-#  get_url:
-#    url: https://releases.rancher.com/install-docker/17.06.sh
-#    dest: /tmp/docker-install-script.sh
-#    mode: 0777
-#
-#- name: Install Docker
-#  become: yes
-#  command: /tmp/docker-install-script.sh
-#  args:
-#    creates: /usr/bin/docker
-#
 - name: Install Pip
   become: yes
   apt:
@@ -91,3 +78,10 @@
     state: restarted
     enabled: yes
   when: daemonjson.changed
+
+- name: Add wes to docker group
+  become: yes
+  user:
+    name: wes
+    groups: docker
+    append: yes

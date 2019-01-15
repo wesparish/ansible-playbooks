@@ -5,12 +5,12 @@
 - include: roles/python/tasks/main.yml
 
 # Set FQDN
-- hosts: ubuntu docker rancher rancher2
+- hosts: ubuntu docker rancher2
   roles:
     - role: hostname
 
 # Common Ubuntu stuff
-- hosts: ubuntu docker rancher rancher2
+- hosts: ubuntu docker rancher2
   roles:
     - role: ubuntu-common
 
@@ -24,47 +24,12 @@
   roles:
     - role: amdgpu
 
+# Configure Nvidia GPU
 - hosts: nvidiagpu
   roles:
     - role: nvidiagpu
 
-# Join Rancher
-- hosts: rancher
-  roles:
-    - role: rancher
-
-# Download bianries and create all services
-- hosts: claymore-nanopool claymore-ubiq ethminer-nanopool ethminer-ubiq
-  roles:
-    - role: common
-
-### Start services ###
-
-- hosts: claymore-nanopool
-  roles: 
-    - role: claymore-nanopool
-
-- hosts: claymore-ubiq
-  roles:
-    - role: claymore-ubiq
-
-- hosts: ethminer-nanopool
-  roles:
-    - role: ethminer-nanopool
-
-- hosts: ethminer-ubiq
-  roles:
-    - role: ethminer-ubiq
-
-### Remove all binaries and services from anything in cleanup group ###
-- hosts: cleanup
-  roles:
-    - role: cleanup
-
-- hosts: cleanup_rancher_1.6
-  roles:
-    - role: cleanup_rancher_1.6
-
+# Join Rancher2 server
 - hosts: rancher2
   roles:
     - role: rancher2
