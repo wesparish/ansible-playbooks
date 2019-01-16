@@ -3,7 +3,7 @@
 - name: Download AMD driver bundle
   become: yes
   unarchive:
-    src: https://nexus.cowtownt.org/repository/mining-repo/amdgpu-pro-17.30-465504.tar.xz
+    src: https://nexus.cowtownt.org/repository/mining-repo/amdgpu-pro/amdgpu-pro-18.50-708488-ubuntu-18.04.tar.xz
     dest: /var/tmp
     remote_src: yes
   register: downloadbundle
@@ -22,12 +22,18 @@
   changed_when: no
   failed_when: false
 
-- name: Install AMD driver bundle with --compute
+- name: Install AMD driver bundle
   become: yes
-  command: ./amdgpu-pro-install --compute -y
+  command: ./amdgpu-pro-install --opencl=legacy --headless --no-dkms -y
   when: clinfopackage.rc > 0
   args:
-    chdir: /var/tmp/amdgpu-pro-17.30-465504
+    chdir: /var/tmp/amdgpu-pro-18.50-708488-ubuntu-18.04
+
+# Required to make above fully functional with Docker
+- name: Install amdgpu-pro
+  become: yes
+  apt:
+    name: amdgpu-pro
     
 - name: Add wes to video group
   become: yes
