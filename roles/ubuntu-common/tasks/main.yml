@@ -42,12 +42,13 @@
      - "deb https://nexus.cowtownt.org/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security multiverse"
 #     - "deb https://nexus.cowtownt.org/repository/ubuntu-{{ ansible_distribution_release }}-custom/ {{ ansible_distribution_release }} main restricted"
   when: not maas
+  register: apt_repos_updated
 
 - name: Setup apt repositories
   become: yes
   apt:
     update_cache: yes
-  when: not maas
+  when: not maas and apt_repos_updated.changed
 
 - name: Delete internet apt repositories
   become: yes
@@ -141,3 +142,15 @@
     path: /etc/inputrc
     regexp: 'history-search-backward'
     line: '"\e[5~": history-search-backward'
+
+- name: Add modprobe rbd
+  become: yes
+  lineinfile:
+    path: /etc/modules
+    line: "rbd"
+
+- name: Modprobe rbd
+  become: true
+  modprobe:
+    name: rbd
+    state: present
