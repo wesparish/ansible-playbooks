@@ -3,7 +3,7 @@
 - name: Download AMD driver bundle
   become: yes
   unarchive:
-    src: https://nexus.cowtownt.org/repository/mining-repo/amdgpu-pro/amdgpu-pro-18.50-708488-ubuntu-18.04.tar.xz
+    src: https://nexus.elastiscale.net/repository/mining-repo/amdgpu-pro/amdgpu-pro-18.50-708488-ubuntu-18.04.tar.xz
     dest: /var/tmp
     remote_src: yes
   register: downloadbundle

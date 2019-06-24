@@ -7,6 +7,12 @@
     src: "90-wes.sudo"
     dest: "/etc/sudoers.d/90-wes"
 
+- name: Setup wes local user
+  become: yes
+  user:
+    name: wes
+    password: "{{ wes_crypted_pwd }}"
+
 - name: Add authorized key
   become: true
   authorized_key:
@@ -16,13 +22,6 @@
   with_file: 
     - public-keys/wes
 
-- name: Add apt key
-  become: yes
-  apt_key:
-    data: "{{ lookup('file', 'public-keys/D3F1E2F6-public.key') }}"
-    state: present
-  when: not maas
-
 - name: Setup apt repositories
   become: yes
   apt_repository:
@@ -30,43 +29,79 @@
     state: present
     update_cache: no
   with_items:
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} main restricted"
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates main restricted"
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} universe"
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates universe"
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} multiverse"
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates multiverse"
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-backports main restricted universe multiverse"
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security main restricted"
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security universe"
-     - "deb https://nexus.cowtownt.org/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security multiverse"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-{{ ansible_distribution_release }}-custom/ {{ ansible_distribution_release }} main restricted"
-  when: not maas
-  register: apt_repos_updated
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} main restricted"
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates main restricted"
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} universe"
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates universe"
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} multiverse"
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates multiverse"
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-backports main restricted universe multiverse"
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security main restricted"
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security universe"
+     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security multiverse"
 
-- name: Setup apt repositories
-  become: yes
-  apt:
-    update_cache: yes
-  when: not maas and apt_repos_updated.changed
+#- name: Add apt key
+#  become: yes
+#  apt_key:
+#    data: "{{ lookup('file', 'public-keys/D3F1E2F6-public.key') }}"
+#    state: present
+#  when: not maas
 
-- name: Delete internet apt repositories
-  become: yes
-  apt_repository:
-    repo: "{{ item }}"
-    state: absent
-  with_items:
-    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} main restricted"
-    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates main restricted"
-    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe"
-    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates universe"
-    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} multiverse"
-    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates multiverse"
-    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-backports main restricted universe multiverse"
-    - "deb http://security.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security main restricted"
-    - "deb http://security.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security universe"
-    - "deb http://security.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security multiverse"
-  when: not maas
+#- name: Remove sources.list (using sources.list.d intead)
+#  become: yes
+#  file:
+#    path: /etc/apt/sources.list
+#    state: absent
+#  register: removed_sources_list
+
+#- name: Setup apt repositories
+#  become: yes
+#  apt_repository:
+#    repo: "{{ item }}"
+#    state: present
+#    update_cache: no
+#  with_items:
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} main restricted"
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates main restricted"
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} universe"
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates universe"
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} multiverse"
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates multiverse"
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-backports main restricted universe multiverse"
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security main restricted"
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security universe"
+#     - "deb https://nexus.elastiscale.net/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security multiverse"
+##     - "deb https://nexus.elastiscale.net/repository/ubuntu-{{ ansible_distribution_release }}-custom/ {{ ansible_distribution_release }} main restricted"
+#  when: not maas
+#  register: apt_repos_updated
+
+#- name: Clear old apt lists
+#  command: dpkg -l clinfo-amdgpu-pro  
+#  when: apt_repos_updated.changed or removed_sources_list.changed
+#
+#- name: Setup apt repositories
+#  become: yes
+#  apt:
+#    update_cache: yes
+#  when: not maas and apt_repos_updated.changed
+#
+#- name: Delete internet apt repositories
+#  become: yes
+#  apt_repository:
+#    repo: "{{ item }}"
+#    state: absent
+#  with_items:
+#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} main restricted"
+#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates main restricted"
+#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe"
+#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates universe"
+#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} multiverse"
+#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates multiverse"
+#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-backports main restricted universe multiverse"
+#    - "deb http://security.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security main restricted"
+#    - "deb http://security.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security universe"
+#    - "deb http://security.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security multiverse"
+#  when: not maas
 
 - name: Set kernel.panic in sysctl.conf
   become: yes

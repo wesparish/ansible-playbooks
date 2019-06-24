@@ -5,7 +5,7 @@
   become: yes
   docker_container:
     name: rancher2-agent-launcher
-    image: nexus.cowtownt.org:5010/rancher/rancher-agent:v2.0.2
+    image: rancher/rancher-agent:v2.2.4
     volumes:
       - /etc/kubernetes:/etc/kubernetes
       - /var/run:/var/run

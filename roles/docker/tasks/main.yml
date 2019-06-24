@@ -34,9 +34,10 @@
 - name: Setup Docker repos
   become: yes
   apt:
-    name: "{{ item }}"
+    name: "{{ packages }}"
     update_cache: yes
-  with_items:
+  vars:
+    packages:
     - apt-transport-https
     - ca-certificates
     - curl
