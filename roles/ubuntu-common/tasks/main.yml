@@ -167,6 +167,16 @@
     state: mounted
   when: location == "weshouse"
 
+- name: Setup ceph home dir
+  become: yes
+  mount:
+    path: "{{ home_dir[location]['path'] }}"
+    src: "{{ home_dir[location]['src'] }}"
+    fstype: "{{ home_dir[location]['fstype'] }}"
+    opts: "{{ home_dir[location]['opts'] }}"
+    state: mounted
+  when: location == "jamiehouse"
+
 - name: Create /mnt/raid5_kdrive dir
   become: yes
   file:
@@ -183,22 +193,22 @@
     state: mounted
   when: location == "weshouse"
 
-- name: Install ntp
+- name: Install chrony
   become: yes
   apt:
-    name: ntp
+    name: chrony
 
-- name: Enable NTP
+- name: Enable chrony
   become: yes
   systemd:
     enabled: yes
-    name: ntp
+    name: chrony
 
-- name: Start NTP
+- name: Start chrony
   become: yes
   systemd:
     state: started
-    name: ntp
+    name: chrony
 
 # Configure page-up page-down history
 - name: Configure page-up history
