@@ -10,13 +10,21 @@
     url: "https://nvidia.github.io/nvidia-docker/gpgkey"
     state: present
 
+#- name: Setup nvidia-docker2 apt repositories
+#  become: yes
+#  template:
+#    src: "templates/{{ item }}"
+#    dest: "/etc/apt/sources.list.d/{{ item }}"
+#  loop: "{{ nvidia_docker_repos[location] }}"
+#    #with_items:
+#          #    - "nvidia-docker.list"
+
 - name: Setup nvidia-docker2 apt repositories
   become: yes
-  template:
-    src: "templates/{{ item }}"
-    dest: "/etc/apt/sources.list.d/{{ item }}"
-  with_items:
-    - "nvidia-docker.list"
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+  loop: "{{ nvidia_docker_repos[location] }}"
 
 - name: Install nvidia-docker2
   become: yes

@@ -3,7 +3,7 @@
 - name: Download AMD driver bundle
   become: yes
   unarchive:
-    src: https://nexus.elastiscale.net/repository/mining-repo/amdgpu-pro/amdgpu-pro-18.50-708488-ubuntu-18.04.tar.xz
+    src: "{{ urls['amdgpupro'][location] }}"
     dest: /var/tmp
     remote_src: yes
   register: downloadbundle
@@ -66,7 +66,7 @@
   lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX='
-    line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 amdgpu.vm_fragment_size=9"'
+    line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 amdgpu.vm_fragment_size=9 amdgpu.hw_i2c=1"'
   register: gruboptions2
   when: location == "jamiehouse"
 
@@ -80,3 +80,46 @@
   command: update-initramfs -u
   when: gruboptions1.changed or gruboptions2.changed
 
+- name: Install pip3
+  become: yes
+  apt:
+    name: "python3-pip"
+
+- name: Install amdgpu-fan
+  become: yes
+  pip:
+    executable: "pip3"
+    name: "amdgpu-fan"
+
+- name: Install config file for amdgpu-fan
+  become: yes
+  template:
+    src: templates/amdgpu-fan.yml
+    dest: /etc/amdgpu-fan.yml
+  register: amdgpu_fan_config_file_changed
+
+- name: Install systemd service for amdgpu-fan
+  become: yes
+  template:
+    src: templates/amdgpu-fan.service
+    dest: /etc/systemd/system/amdgpu-fan.service
+
+- name: Enable amdgpu-fan
+  become: yes
+  systemd:
+    enabled: yes
+    name: amdgpu-fan
+
+- name: Start amdgpu-fan
+  become: yes
+  systemd:
+    state: started
+    name: amdgpu-fan
+
+- name: Restart admgpu-fan
+  become: yes
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: amdgpu-fan
+  when: amdgpu_fan_config_file_changed.changed

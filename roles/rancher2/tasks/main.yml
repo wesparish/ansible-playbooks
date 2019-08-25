@@ -5,7 +5,7 @@
   become: yes
   docker_container:
     name: rancher2-agent-launcher
-    image: rancher/rancher-agent:v2.2.4
+    image: "{{ rancher2_image[location] }}"
     volumes:
       - /etc/kubernetes:/etc/kubernetes
       - /var/run:/var/run
