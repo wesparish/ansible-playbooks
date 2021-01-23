@@ -22,12 +22,16 @@
   changed_when: no
   failed_when: false
 
+- name: DEBUG downloadbundle
+  debug:
+    msg: "{{ downloadbundle }}"
+
 - name: Install AMD driver bundle
   become: yes
-  command: ./amdgpu-pro-install --opencl=legacy --headless --no-dkms -y
+  command: ./amdgpu-install --opencl=legacy --headless --no-dkms -y
   when: clinfopackage.rc > 0
   args:
-    chdir: /var/tmp/amdgpu-pro-18.50-708488-ubuntu-18.04
+    chdir: "{{ downloadbundle.dest }}/{{ downloadbundle.src | regex_replace('^.*(amdgpu-pro-.+).tar.xz$', '\\1') }}"
 
 # Required to make above fully functional with Docker
 - name: Install amdgpu-pro

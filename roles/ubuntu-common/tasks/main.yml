@@ -157,6 +157,12 @@
   become: yes
   apt:
     name: nfs-common
+
+# python-routes is for ceph dashboard
+- name: Install python-routes
+  become: yes
+  apt:
+    name: python-routes
   
 - name: Setup NFS home dir
   become: yes
