@@ -21,7 +21,7 @@
     src: templates/daemon.json
     dest: /etc/docker/daemon.json
   register: daemonjson
-  when: inventory_hostname not in groups['nvidiagpu']
+  when: inventory_hostname not in (groups['nvidiagpu'] | default([]))
 
 - name: Deploy nvidia daemon.json
   become: yes
@@ -29,7 +29,7 @@
     src: templates/daemon-nvidia.json
     dest: /etc/docker/daemon.json
   register: daemonjson
-  when: inventory_hostname in groups['nvidiagpu']
+  when: inventory_hostname in (groups['nvidiagpu'] | default([]))
 
 - name: Setup Docker repos
   become: yes
