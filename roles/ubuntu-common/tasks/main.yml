@@ -249,3 +249,12 @@
     name: systemd-resolved
     enabled: no
     state: stopped
+
+- name: Template /etc/resolv.conf
+  become: true
+  template:
+    src: "resolv.conf.j2"
+    dest: "/etc/resolv.conf"
+    owner: root
+    group: root
+    mode: 0644

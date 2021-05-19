@@ -1,0 +1,13 @@
+{% if not (dns_nameservers | default(None)) %}
+  {%- if location == "weshouse" %}
+search {{ dns_search_paths | default('weshouse jamiehouse maas miners') }}
+nameserver 172.16.1.1
+  {%- endif %}
+  {%- if location == "jamiehouse" %}
+search {{ dns_search_paths | default('jamiehouse weshouse maas miners') }}
+nameserver 10.2.1.1
+  {%- endif %}
+{% endif %}
+{% for nameserver in (dns_nameservers | default([])) %}
+nameserver {{ nameserver }}
+{% endfor %}
