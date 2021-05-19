@@ -242,3 +242,10 @@
   modprobe:
     name: rbd
     state: present
+
+- name: Stop and disable systemd-resolved
+  become: true
+  systemd:
+    name: systemd-resolved
+    enabled: no
+    state: stopped
