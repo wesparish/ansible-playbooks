@@ -1,6 +1,13 @@
 ---
 # This playbook cleans up all miners and removes all services
 
+# Update ca-certificates packages, included is out of date
+- name: Install ca-certificates
+  become: yes
+  apt:
+    name: ca-certificates
+    state: latest
+
 - name: sudo
   become: yes
   template:
