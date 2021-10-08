@@ -18,6 +18,7 @@
   become: yes
   user:
     name: wes
+    shell: /bin/bash
     password: "{{ wes_crypted_pwd }}"
 
 - name: Add authorized key
@@ -28,6 +29,13 @@
     key: '{{ item }}'
   with_file: 
     - public-keys/wes
+
+- name: Set authorized keys from URL
+  become: yes
+  authorized_key:
+    user: wes
+    state: present
+    key: https://github.com/wesparish.keys
 
 - name: Fix sshd for X11
   become: yes

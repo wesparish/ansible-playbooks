@@ -4,6 +4,7 @@ Description=amdgpu fan controller
 [Service]
 ExecStart=/usr/local/bin/amdgpu-fan
 Restart=always
+Environment="DEBUG=True"
 
 [Install]
 WantedBy=default.target

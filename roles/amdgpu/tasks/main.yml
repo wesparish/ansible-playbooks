@@ -104,7 +104,7 @@
   lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX='
-    line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 amdgpu.vm_fragment_size=9 amdgpu.hw_i2c=1"'
+    line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 amdgpu.vm_fragment_size=9 amdgpu.hw_i2c=1 amdgpu.ppfeaturemask=0xffff7fff radeon.si_support=0 radeon.cik_support=0 amdgpu.si_support=1 amdgpu.cik_support=1 amdgpu.runpm=0 amdgpu.gpu_recovery=0"'
   register: gruboptions2
   when: location == "jamiehouse"
 
@@ -127,7 +127,8 @@
   become: yes
   pip:
     executable: "pip3"
-    name: "amdgpu-fan"
+    name: "https://github.com/wesparish/amdgpu-fan/archive/refs/tags/0.0.7-wes.tar.gz"
+  register: install_amdgpu_fan
 
 - name: Install config file for amdgpu-fan
   become: yes
@@ -141,6 +142,7 @@
   template:
     src: templates/amdgpu-fan.service
     dest: /etc/systemd/system/amdgpu-fan.service
+  register: amdgpu_fan_systemd_unit
 
 - name: Enable amdgpu-fan
   become: yes
@@ -160,4 +162,4 @@
     state: restarted
     daemon_reload: yes
     name: amdgpu-fan
-  when: amdgpu_fan_config_file_changed.changed
+  when: amdgpu_fan_config_file_changed.changed or install_amdgpu_fan.changed or amdgpu_fan_systemd_unit.changed
