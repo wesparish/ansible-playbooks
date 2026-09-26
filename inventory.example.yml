@@ -1,0 +1,26 @@
+# Example inventory - copy to inventory.yml or use -i inventory.example.yml
+# Ubuntu 24+ only. Groups: all, docker, nvidiagpu (optional), rancher2 (optional).
+#
+# For local testing inside the dev container (Ubuntu 24), use:
+#   all:
+#     hosts:
+#       localhost:
+#         ansible_connection: local
+#     children:
+#       docker:
+#         hosts:
+#           localhost:
+#   Then: make test ARGS="-e wes_crypted_pwd=YOUR_CRYPTED_PWD -e location=weshouse"
+
+# Replace placeholder with your host(s). For local dev container testing, use localhost with ansible_connection=local.
+all:
+  hosts:
+    placeholder:
+      ansible_connection: local
+      # ansible_host: 192.168.1.10
+      # ansible_user: wes
+      # location: weshouse
+  children:
+    docker:
+      hosts:
+        placeholder: {}

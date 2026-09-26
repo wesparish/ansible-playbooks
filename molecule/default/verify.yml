@@ -1,0 +1,43 @@
+---
+- hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Check Docker binary exists
+      ansible.builtin.stat:
+        path: /usr/bin/docker
+      register: docker_binary
+
+    - name: Assert Docker is installed
+      ansible.builtin.assert:
+        that: docker_binary.stat.exists
+
+    - name: Check user wes exists
+      ansible.builtin.getent:
+        database: passwd
+        key: wes
+
+    - name: Read sshd_config
+      ansible.builtin.slurp:
+        src: /etc/ssh/sshd_config
+      register: sshd_config
+
+    - name: Assert SSH config contains AddressFamily inet
+      ansible.builtin.assert:
+        that: "'AddressFamily inet' in (sshd_config.content | b64decode)"
+
+    - name: Sudoers file for wes exists
+      ansible.builtin.stat:
+        path: /etc/sudoers.d/90-wes
+      register: sudoers_file
+
+    - name: Assert sudoers file exists
+      ansible.builtin.assert:
+        that: sudoers_file.stat.exists
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Assert chrony is running
+      ansible.builtin.assert:
+        that: ansible_facts.services['chrony.service'].state == 'running'

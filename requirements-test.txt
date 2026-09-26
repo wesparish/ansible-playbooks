@@ -1,0 +1,4 @@
+# Install for Molecule testing: pip install -r requirements-test.txt
+molecule>=25.1
+molecule-plugins[vagrant]>=24.0
+python-vagrant

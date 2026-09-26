@@ -1,0 +1,15 @@
+{
+  "storage-driver": "overlay2",
+  "log-driver": "json-file",
+  "log-opts": {"max-size": "1m"}
+{% if docker_use_nvidia_runtime | default(false) %}
+  ,
+  "default-runtime": "nvidia",
+  "runtimes": {
+    "nvidia": {
+      "path": "nvidia-container-runtime",
+      "runtimeArgs": []
+    }
+  }
+{% endif %}
+}

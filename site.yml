@@ -1,15 +1,26 @@
 ---
-# This playbook will configure all miners
+# Infrastructure playbook - Ubuntu 24+ only
 
-# Verifies that python is installed
-- include: roles/python/tasks/main.yml
+# Bootstrap: ensure Python 3 is available for Ansible (idempotent)
+- hosts: all
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  pre_tasks:
+    - name: Install Python 3 for Ansible
+      become: true
+      ansible.builtin.raw: test -e /usr/bin/python3 || (apt-get update -qq && apt-get install -y python3-minimal python3)
+      changed_when: false
+
+    - name: Gather facts
+      ansible.builtin.setup:
 
 # Set FQDN
 - hosts: all
   roles:
     - role: hostname
 
-# Common Ubuntu stuff
+# Common Ubuntu configuration
 - hosts: all
   roles:
     - role: ubuntu-common
@@ -19,17 +30,12 @@
   roles:
     - role: docker
 
-# Configure AMD GPU
-- hosts: amdgpu
-  roles:
-    - role: amdgpu
-
-# Configure Nvidia GPU
+# NVIDIA GPU (Ubuntu package manager drivers + container runtime)
 - hosts: nvidiagpu
   roles:
     - role: nvidiagpu
 
-# Join Rancher2 server
+# Join Rancher 2 server
 - hosts: rancher2
   roles:
     - role: rancher2

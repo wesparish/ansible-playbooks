@@ -1,0 +1,3 @@
+---
+# NVIDIA driver package from Ubuntu repos (meta-package installs recommended version)
+nvidia_driver_package: nvidia-driver-565-server

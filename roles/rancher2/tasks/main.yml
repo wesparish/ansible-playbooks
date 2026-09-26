@@ -1,9 +1,9 @@
 ---
-# This playbook cleans up all miners and removes all services
+# Rancher 2.x agent launcher
 
 - name: Rancher 2.0 agent launcher
-  become: yes
-  docker_container:
+  become: true
+  community.docker.docker_container:
     name: rancher2-agent-launcher
     image: "{{ rancher2_image[location] }}"
     volumes:
@@ -19,6 +19,6 @@
   register: rancheragent
 
 - name: Display Rancher agent info
-  debug:
+  ansible.builtin.debug:
     var: rancheragent
     verbosity: 4

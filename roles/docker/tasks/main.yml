@@ -1,88 +1,82 @@
 ---
-# This playbook cleans up all miners and removes all services
-
-#- name: Install docker
-#  become: yes
-#  shell: "curl https://releases.rancher.com/install-docker/17.06.sh | sh"
-#  args:
-#    creates: /usr/bin/docker
-#    executable: /bin/bash
+# Docker - Ubuntu 24+
 
 - name: Docker config directory
-  become: yes
-  file: 
+  become: true
+  ansible.builtin.file:
     path: /etc/docker
     state: directory
     owner: root
+    mode: "0755"
+
+- name: Set docker facts
+  ansible.builtin.set_fact:
+    docker_use_nvidia_runtime: "{{ inventory_hostname in (groups['nvidiagpu'] | default([])) }}"
+    docker_apt_repo: "deb [arch={{ ansible_architecture | replace('x86_64', 'amd64') }}] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
 
 - name: Deploy daemon.json
-  become: yes
-  template:
-    src: templates/daemon.json
+  become: true
+  ansible.builtin.template:
+    src: daemon.json.j2
     dest: /etc/docker/daemon.json
   register: daemonjson
-  when: inventory_hostname not in (groups['nvidiagpu'] | default([]))
 
-- name: Deploy nvidia daemon.json
-  become: yes
-  template:
-    src: templates/daemon-nvidia.json
-    dest: /etc/docker/daemon.json
-  register: daemonjson
-  when: inventory_hostname in (groups['nvidiagpu'] | default([]))
+- name: Install Docker dependency packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: present
+    update_cache: true
 
-- name: Setup Docker repos
-  become: yes
-  apt:
-    name: "{{ packages }}"
-    update_cache: yes
-  vars:
-    packages:
-    - apt-transport-https
-    - ca-certificates
-    - curl
-    - software-properties-common
+- name: Ensure keyrings directory exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
 
-- name: Add Docker apt key
-  become: yes
-  apt_key:
+- name: Add Docker CE apt key
+  become: true
+  ansible.builtin.get_url:
     url: "https://download.docker.com/linux/ubuntu/gpg"
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+
+- name: Add Docker CE repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ ansible_architecture | replace('x86_64', 'amd64') }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
     state: present
 
-- name: Add Docker repository
-  become: yes
-  apt_repository:
-    repo: "{{ apt_repos['docker_repo'][location] }}"
-    state: present
-
-- name: Install Docker
-  become: yes
-  apt:
+- name: Install Docker CE
+  become: true
+  ansible.builtin.apt:
     name: docker-ce
-    update_cache: yes
+    state: present
+    update_cache: true
 
-- name: Install Pip
-  become: yes
-  apt:
-    name: python-pip
-    update_cache: yes
+- name: Ensure Python docker module is available (for Ansible)
+  become: true
+  ansible.builtin.apt:
+    name: python3-docker
+    state: present
+    update_cache: true
 
-- name: Pip install docker
-  become: yes
-  pip:
-    name: docker
-
-- name: Restart docker
-  become: yes
-  service:
+- name: Restart and enable Docker
+  become: true
+  ansible.builtin.service:
     name: docker
     state: restarted
-    enabled: yes
+    enabled: true
   when: daemonjson.changed
 
 - name: Add wes to docker group
-  become: yes
-  user:
+  become: true
+  ansible.builtin.user:
     name: wes
     groups: docker
-    append: yes
+    append: true

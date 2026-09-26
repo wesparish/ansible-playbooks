@@ -1,53 +1,30 @@
-# Install AMD gpu and upgrade kernel
+---
+# NVIDIA GPU support - Ubuntu package manager only (no custom drivers/kernel)
 
-#- name: Update all packages to the latest version
-#  apt:
-#    upgrade: dist
-
-- name: Add nvidia-docker2 apt key
-  become: yes
-  apt_key:
-    url: "https://nvidia.github.io/nvidia-docker/gpgkey"
+- name: Ensure universe repository is enabled (for nvidia-container-toolkit)
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} universe"
     state: present
+  when: ansible_distribution_release is defined
 
-#- name: Setup nvidia-docker2 apt repositories
-#  become: yes
-#  template:
-#    src: "templates/{{ item }}"
-#    dest: "/etc/apt/sources.list.d/{{ item }}"
-#  loop: "{{ nvidia_docker_repos[location] }}"
-#    #with_items:
-#          #    - "nvidia-docker.list"
-
-- name: Setup nvidia-docker2 apt repositories
-  become: yes
-  apt_repository:
-    repo: "{{ item }}"
+- name: Install NVIDIA driver (Ubuntu packages)
+  become: true
+  ansible.builtin.apt:
+    name: "{{ nvidia_driver_package }}"
     state: present
-  loop: "{{ nvidia_docker_repos[location] }}"
+    update_cache: true
 
-- name: Install nvidia-docker2
-  become: yes
-  apt:
-    name: "{{ item }}"
-    update_cache: yes
-  with_items:
-    - "nvidia-docker2"
-    - "nvidia-384"
-#    - "cuda-drivers"
+- name: Install NVIDIA container toolkit (for Docker)
+  become: true
+  ansible.builtin.apt:
+    name: nvidia-container-toolkit
+    state: present
+    update_cache: true
 
-- name: Deploy daemon.json
-  become: yes
-  template:
-    src: templates/daemon.json
-    dest: /etc/docker/daemon.json
-  register: daemonjson
-
-- name: Restart docker
-  become: yes
-  service:
-    name: docker
-    state: restarted
-    enabled: yes
-  when: daemonjson.changed
-
+- name: Add wes to video group
+  become: true
+  ansible.builtin.user:
+    name: wes
+    groups: video
+    append: true

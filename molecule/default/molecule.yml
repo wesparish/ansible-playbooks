@@ -1,0 +1,22 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: libvirt
+platforms:
+  - name: instance
+    box: bento/ubuntu-24.04
+    memory: 2048
+    cpus: 2
+    groups:
+      - docker
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      localhost:
+        ansible_python_interpreter: "${MOLECULE_VENV_PYTHON:-/usr/bin/python3}"
+verifier:
+  name: ansible

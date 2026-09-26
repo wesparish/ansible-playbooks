@@ -1,0 +1,10 @@
+---
+# Prepare the VM for the main playbook.
+# The bento/ubuntu-24.04 box comes with a full OS including systemd,
+# so minimal preparation is needed compared to Docker containers.
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: Wait for VM to be reachable
+      wait_for_connection:
+        timeout: 120

@@ -1,0 +1,3 @@
+---
+# Run the full site playbook (same as production). Instance is in groups: all, docker.
+- import_playbook: ../../site.yml

@@ -1,0 +1,3 @@
+---
+# Default Docker CE repo (set at runtime in tasks so ansible_distribution_release is available)
+docker_apt_repo: ""

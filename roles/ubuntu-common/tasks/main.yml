@@ -1,275 +1,192 @@
 ---
-# This playbook cleans up all miners and removes all services
+# Common Ubuntu configuration - Ubuntu 24+ only. All tasks are idempotent.
 
-# Update ca-certificates packages, included is out of date
+- name: Require Ubuntu 24 or newer
+  ansible.builtin.assert:
+    that: ansible_distribution_version is version('24.04', '>=')
+    fail_msg: "This role supports Ubuntu 24.04 and newer only (found {{ ansible_distribution_version }})."
+  when: not ansible_check_mode
+
 - name: Install ca-certificates
-  become: yes
-  apt:
+  become: true
+  ansible.builtin.apt:
     name: ca-certificates
-    state: latest
+    state: present
 
-- name: sudo
-  become: yes
-  template:
+- name: Deploy sudoers fragment for wes
+  become: true
+  ansible.builtin.template:
     src: "90-wes.sudo"
     dest: "/etc/sudoers.d/90-wes"
+    validate: "visudo -cf %s"
 
-- name: Setup wes local user
-  become: yes
-  user:
+- name: Ensure wes user exists
+  become: true
+  ansible.builtin.user:
     name: wes
     shell: /bin/bash
     password: "{{ wes_crypted_pwd }}"
+    state: present
 
-- name: Add authorized key
+- name: Add authorized keys from local file
   become: true
-  authorized_key:
+  ansible.posix.authorized_key:
     user: wes
     state: present
-    key: '{{ item }}'
-  with_file: 
-    - public-keys/wes
+    key: "{{ item }}"
+  loop: "{{ (lookup('file', role_path + '/public-keys/wes', errors='ignore') | trim).split('\n') | reject('equalto', '') | list }}"
+  when: (lookup('file', role_path + '/public-keys/wes', errors='ignore') | trim) | length > 0
 
-- name: Set authorized keys from URL
-  become: yes
-  authorized_key:
+- name: Add authorized keys from GitHub
+  become: true
+  ansible.posix.authorized_key:
     user: wes
     state: present
-    key: https://github.com/wesparish.keys
+    key: "{{ item }}"
+  loop: "{{ (lookup('url', 'https://github.com/wesparish.keys', errors='ignore') | default('') | trim).split('\n') | reject('equalto', '') | list }}"
+  when:
+    - not ansible_check_mode
+    - not (molecule_test | default(false))
+    - (lookup('url', 'https://github.com/wesparish.keys', errors='ignore') | default('') | trim) | length > 0
+  ignore_errors: true
 
-- name: Fix sshd for X11
-  become: yes
-  lineinfile:
+- name: Set AddressFamily in sshd_config
+  become: true
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^AddressFamily '
     line: 'AddressFamily inet'
   register: sshd_changes
 
-- name: Restart sshd
-  become: yes
-  service:
-    name: sshd
+- name: Restart SSH service
+  become: true
+  ansible.builtin.service:
+    name: ssh
     state: restarted
-    enabled: yes
+    enabled: true
   when: sshd_changes.changed
 
-#- name: Setup apt repositories
-#  become: yes
-#  apt_repository:
-#    repo: "{{ item }}"
-#    state: present
-#    update_cache: no
-#  with_items:
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} main restricted"
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates main restricted"
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} universe"
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates universe"
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} multiverse"
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates multiverse"
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-backports main restricted universe multiverse"
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security main restricted"
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security universe"
-#     -  "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security multiverse"
-
-#- name: Add apt key
-#  become: yes
-#  apt_key:
-#    data: "{{ lookup('file', 'public-keys/D3F1E2F6-public.key') }}"
-#    state: present
-#  when: not maas
-
-#- name: Remove sources.list (using sources.list.d intead)
-#  become: yes
-#  file:
-#    path: /etc/apt/sources.list
-#    state: absent
-#  register: removed_sources_list
-
-#- name: Setup apt repositories
-#  become: yes
-#  apt_repository:
-#    repo: "{{ item }}"
-#    state: present
-#    update_cache: no
-#  with_items:
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} main restricted"
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates main restricted"
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} universe"
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates universe"
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} multiverse"
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates multiverse"
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-backports main restricted universe multiverse"
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security main restricted"
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security universe"
-#     - "deb https://nexus.elastiscale.net/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security multiverse"
-##     - "deb https://nexus.elastiscale.net/repository/ubuntu-{{ ansible_distribution_release }}-custom/ {{ ansible_distribution_release }} main restricted"
-#  when: not maas
-#  register: apt_repos_updated
-
-#- name: Remove old local apt repositories if necessary
-#  become: yes
-#  apt_repository:
-#    repo: "{{ item }}"
-#    state: absent
-#    update_cache: no
-#  with_items:
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} main restricted"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates main restricted"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} universe"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates universe"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }} multiverse"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-updates multiverse"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-archive-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-backports main restricted universe multiverse"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security main restricted"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security universe"
-#     - "deb https://nexus.cowtownt.org/repository/ubuntu-security-{{ ansible_distribution_release }}/ {{ ansible_distribution_release }}-security multiverse"
-##     - "deb https://nexus.elastiscale.net/repository/ubuntu-{{ ansible_distribution_release }}-custom/ {{ ansible_distribution_release }} main restricted"
-#  register: apt_repos_updated
-
-#- name: Clear old apt lists
-#  become: yes
-#  command: mv /etc/apt/sources.list /etc/apt/sources.list.orig
-#  when: apt_repos_updated.changed
-#
-#- name: Setup apt repositories
-#  become: yes
-#  apt:
-#    update_cache: yes
-#  when: not maas and apt_repos_updated.changed
-#
-#- name: Delete internet apt repositories
-#  become: yes
-#  apt_repository:
-#    repo: "{{ item }}"
-#    state: absent
-#  with_items:
-#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} main restricted"
-#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates main restricted"
-#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe"
-#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates universe"
-#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} multiverse"
-#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates multiverse"
-#    - "deb http://us.archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-backports main restricted universe multiverse"
-#    - "deb http://security.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security main restricted"
-#    - "deb http://security.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security universe"
-#    - "deb http://security.ubuntu.com/ubuntu {{ ansible_distribution_release }}-security multiverse"
-#  when: not maas
-
-- name: Set kernel.panic in sysctl.conf
-  become: yes
-  lineinfile:
-    path: /etc/sysctl.conf
-    regexp: '^kernel.panic ='
-    line: 'kernel.panic = 10'
-  register: sysctl
-
-- name: Reload sysctl settings
-  become: yes
-  command: sysctl -p
-  when: sysctl.changed
+- name: Set kernel.panic in sysctl
+  become: true
+  ansible.posix.sysctl:
+    name: kernel.panic
+    value: "10"
+    state: present
+    reload: true
 
 - name: Install nfs-common
-  become: yes
-  apt:
+  become: true
+  ansible.builtin.apt:
     name: nfs-common
+    state: present
 
-# python-routes is for ceph dashboard
-- name: Install python-routes
-  become: yes
-  apt:
-    name: python-routes
-  
-- name: Setup NFS home dir
-  become: yes
-  mount:
+- name: Install python3-routes (for ceph dashboard)
+  become: true
+  ansible.builtin.apt:
+    name: python3-routes
+    state: present
+
+- name: Create /mnt/raid5_kdrive directory
+  become: true
+  ansible.builtin.file:
+    path: /mnt/raid5_kdrive
+    state: directory
+  when:
+    - location | default('') == "weshouse"
+
+- name: Mount NFS home dir (weshouse)
+  become: true
+  ansible.posix.mount:
     path: /home/wes
     src: 172.16.1.17:/mnt/raid5_kdrive/home/wes
     fstype: nfs
     state: mounted
-  when: location == "weshouse"
+  when:
+    - location | default('') == "weshouse"
+    - not (molecule_test | default(false))
 
-- name: Setup jamiehouse home dir
-  become: yes
-  mount:
+- name: Mount home dir (jamiehouse)
+  become: true
+  ansible.posix.mount:
     path: "{{ home_dir[location]['path'] }}"
     src: "{{ home_dir[location]['src'] }}"
     fstype: "{{ home_dir[location]['fstype'] }}"
     opts: "{{ home_dir[location]['opts'] }}"
     state: mounted
-  when: location == "jamiehouse"
+  when:
+    - location | default('') == "jamiehouse"
+    - not (molecule_test | default(false))
 
-- name: Create /mnt/raid5_kdrive dir
-  become: yes
-  file:
-    path: /mnt/raid5_kdrive
-    state: directory
-  when: location == "weshouse"
-
-- name: Setup NFS raid5_kdrive dir
-  become: yes
-  mount:
+- name: Mount NFS raid5_kdrive (weshouse)
+  become: true
+  ansible.posix.mount:
     path: /mnt/raid5_kdrive
     src: 172.16.1.17:/mnt/raid5_kdrive/
     fstype: nfs
     state: mounted
-  when: location == "weshouse"
+  when:
+    - location | default('') == "weshouse"
+    - not (molecule_test | default(false))
 
-- name: Install chrony
-  become: yes
-  apt:
+- name: Install and enable chrony
+  become: true
+  ansible.builtin.apt:
     name: chrony
+    state: present
 
 - name: Enable chrony
-  become: yes
-  systemd:
-    enabled: yes
+  become: true
+  ansible.builtin.systemd:
     name: chrony
+    enabled: true
 
 - name: Start chrony
-  become: yes
-  systemd:
-    state: started
+  become: true
+  ansible.builtin.systemd:
     name: chrony
+    state: started
 
-# Configure page-up page-down history
-- name: Configure page-up history
-  become: yes
-  lineinfile:
+- name: Configure page-up history in inputrc
+  become: true
+  ansible.builtin.lineinfile:
     path: /etc/inputrc
     regexp: 'history-search-forward'
     line: '"\e[6~": history-search-forward'
+    insertafter: EOF
 
-- name: Configure page-down history
-  become: yes
-  lineinfile:
+- name: Configure page-down history in inputrc
+  become: true
+  ansible.builtin.lineinfile:
     path: /etc/inputrc
     regexp: 'history-search-backward'
     line: '"\e[5~": history-search-backward'
+    insertafter: EOF
 
-- name: Add modprobe rbd
-  become: yes
-  lineinfile:
+- name: Ensure rbd module is in /etc/modules
+  become: true
+  ansible.builtin.lineinfile:
     path: /etc/modules
     line: "rbd"
+    create: true
 
-- name: Modprobe rbd
+- name: Load rbd kernel module
   become: true
-  modprobe:
+  community.general.modprobe:
     name: rbd
     state: present
 
 - name: Stop and disable systemd-resolved
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: systemd-resolved
-    enabled: no
+    enabled: false
     state: stopped
 
-- name: Template /etc/resolv.conf
+- name: Deploy resolv.conf
   become: true
-  template:
+  ansible.builtin.template:
     src: "resolv.conf.j2"
     dest: "/etc/resolv.conf"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"

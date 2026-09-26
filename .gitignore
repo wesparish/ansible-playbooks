@@ -1,3 +1,8 @@
 *.retry
 group_vars/all
 *-inventory.yml*
+.inventory.docker.generated
+.molecule-extra.yml
+.venv/
+.vagrant/
+molecule/default/.vagrant/

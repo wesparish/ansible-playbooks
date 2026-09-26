@@ -1,3 +1,0 @@
-deb https://nexus-jamie.elastiscale.net/repository/libnvidia-container /
-deb https://nexus-jamie.elastiscale.net/repository/nvidia-container-runtime /
-deb https://nexus-jamie.elastiscale.net/repository/nvidia-docker /
