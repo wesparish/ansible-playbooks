@@ -7,11 +7,20 @@
     fail_msg: "This role supports Ubuntu 24.04 and newer only (found {{ ansible_distribution_version }})."
   when: not ansible_check_mode
 
+- name: Remove stale installer cdrom apt source
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list
+    regexp: '^deb .*file:///cdrom'
+    state: absent
+  register: cdrom_source_removed
+
 - name: Install ca-certificates
   become: true
   ansible.builtin.apt:
     name: ca-certificates
     state: present
+    update_cache: "{{ cdrom_source_removed.changed }}"
 
 - name: Deploy sudoers fragment for wes
   become: true
@@ -139,12 +148,14 @@
   ansible.builtin.systemd:
     name: chrony
     enabled: true
+  when: not ansible_check_mode
 
 - name: Start chrony
   become: true
   ansible.builtin.systemd:
     name: chrony
     state: started
+  when: not ansible_check_mode
 
 - name: Configure page-up history in inputrc
   become: true
